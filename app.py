@@ -30,19 +30,33 @@ def recommend_film(title, num_recommendations=6):
     result['cosine_similarity'] = similarities
     return result
 
-# Streamlit UI
+# Tampilan utama
 st.set_page_config(layout="wide")
-st.markdown("<h1 style='text-align: center;'>🎬 Sistem Rekomendasi Film</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: white;'>🎬 Sistem Rekomendasi Film</h1>", unsafe_allow_html=True)
 
-# Input besar & tengah
+# Input besar
+input_title = st.text_input(
+    "",
+    placeholder="Masukkan Judul Film Favoritmu...",
+    key="film_input"
+)
+
 st.markdown("""
-    <div style='display:flex; justify-content:center;'>
-        <input type='text' name='film_input' placeholder='Masukkan Judul Film...' 
-            style='width:80%; height:50px; font-size:18px; padding:10px; border-radius:10px; border:none;'>
-    </div>
+<style>
+input[data-baseweb="input"] {
+    height: 50px;
+    font-size: 18px;
+}
+.stButton>button {
+    padding: 0.75em 2em;
+    font-size: 16px;
+    border-radius: 10px;
+}
+.stContainer {
+    max-width: 100%;
+}
+</style>
 """, unsafe_allow_html=True)
-
-input_title = st.text_input("Masukkan Judul film yang kamu suka :", "")
 
 if st.button("Cari Rekomendasi"):
     hasil = recommend_film(input_title)
@@ -50,18 +64,21 @@ if st.button("Cari Rekomendasi"):
     if isinstance(hasil, str):
         st.warning(hasil)
     else:
-        st.markdown("<h4 style='text-align: center;'>Berikut hasil rekomendasi film mu :</h4>", unsafe_allow_html=True)
-        cols = st.columns(3)
-
-        for i, (_, row) in enumerate(hasil.iterrows()):
-            with cols[i % 3]:
-                st.image(row['poster_url'], use_container_width=True)
-                st.markdown(f"""
-                    <div style='background-color:#f5f5f5; padding:20px; border-radius:15px; margin-top:15px;'>
-                        <p style='color:black'><strong>Title:</strong> {row['title']}</p>
-                        <p style='color:black'><strong>Genre:</strong> {row['genres']}</p>
-                        <p style='color:black'><strong>Director:</strong> {row['director']}</p>
-                        <p style='color:black'><strong>Cast:</strong> {row['cast']}</p>
-                    </div>
-                """, unsafe_allow_html=True)
-
+        st.markdown("<h3 style='text-align: center; color: white;'>Berikut hasil rekomendasi film mu :</h3>", unsafe_allow_html=True)
+        
+        # 2 baris isi 3 kolom
+        for i in range(0, len(hasil), 3):
+            cols = st.columns(3)
+            for j in range(3):
+                if i + j < len(hasil):
+                    film = hasil.iloc[i + j]
+                    with cols[j]:
+                        st.image(f"https://via.placeholder.com/300x450.png?text={film['title'].replace(' ', '+')}", use_column_width=True)
+                        st.markdown(f"""
+                            <div style='background-color: white; padding: 15px; border-radius: 15px; margin-top: 10px;'>
+                                <strong>Title:</strong> {film['title']}<br>
+                                <strong>Genre:</strong> {film['genres']}<br>
+                                <strong>Director:</strong> {film['director']}<br>
+                                <strong>Cast:</strong> {film['cast']}
+                            </div>
+                        """, unsafe_allow_html=True)
