@@ -1,16 +1,16 @@
 
 import streamlit as st
 import joblib
-from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
 
-# Load file .pkl
+# Load model & data
 df_all = joblib.load('df_all.pkl')
 tfidf = joblib.load('tfidf_vectorizer.pkl')
 tfidf_matrix = joblib.load('tfidf_matrix.pkl')
-
 cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
 
+# Fungsi rekomendasi
 def recommend_film(title, num_recommendations=6):
     title = title.lower()
     matches = df_all[df_all['title'].str.lower().str.contains(title, na=False)]
@@ -24,39 +24,34 @@ def recommend_film(title, num_recommendations=6):
     sim_scores = sim_scores[1:num_recommendations+1]
 
     film_indices = [i[0] for i in sim_scores]
-    similarities = [i[1] for i in sim_scores]
-
     result = df_all.iloc[film_indices].copy()
-    result['cosine_similarity'] = similarities
     return result
 
-# Tampilan utama
-st.set_page_config(layout="wide")
-st.markdown("<h1 style='text-align: center; color: white;'>🎬 Sistem Rekomendasi Film</h1>", unsafe_allow_html=True)
-
-# Input besar
-input_title = st.text_input(
-    "",
-    placeholder="Masukkan Judul Film Favoritmu...",
-    key="film_input"
-)
-
+# 🎨 CSS Custom agar font hitam & tampilan lebih rapi
 st.markdown("""
-<style>
-input[data-baseweb="input"] {
-    height: 50px;
-    font-size: 18px;
-}
-.stButton>button {
-    padding: 0.75em 2em;
-    font-size: 16px;
-    border-radius: 10px;
-}
-.stContainer {
-    max-width: 100%;
-}
-</style>
+    <style>
+    .film-box {
+        background-color: #f4f4f4;
+        padding: 10px 15px;
+        border-radius: 15px;
+        text-align: center;
+        color: #111111;
+        font-size: 16px;
+    }
+    .film-title {
+        font-weight: bold;
+        font-size: 18px;
+        margin-top: 10px;
+    }
+    img {
+        border-radius: 10px;
+    }
+    </style>
 """, unsafe_allow_html=True)
+
+# UI
+st.title("🎬 Sistem Rekomendasi Film")
+input_title = st.text_input("Masukkan judul film yang kamu suka:")
 
 if st.button("Cari Rekomendasi"):
     hasil = recommend_film(input_title)
@@ -64,21 +59,21 @@ if st.button("Cari Rekomendasi"):
     if isinstance(hasil, str):
         st.warning(hasil)
     else:
-        st.markdown("<h3 style='text-align: center; color: white;'>Berikut hasil rekomendasi film mu :</h3>", unsafe_allow_html=True)
+        st.markdown("### Berikut hasil rekomendasi film untukmu:")
         
-        # 2 baris isi 3 kolom
+        # Tampilkan dalam grid 3 kolom per baris
         for i in range(0, len(hasil), 3):
             cols = st.columns(3)
-            for j in range(3):
-                if i + j < len(hasil):
-                    film = hasil.iloc[i + j]
-                    with cols[j]:
-                        st.image(f"https://via.placeholder.com/300x450.png?text={film['title'].replace(' ', '+')}", use_column_width=True)
+            for idx, col in enumerate(cols):
+                if i + idx < len(hasil):
+                    film = hasil.iloc[i + idx]
+                    with col:
+                        st.image(film['poster_url'], width=180)
                         st.markdown(f"""
-                            <div style='background-color: white; padding: 15px; border-radius: 15px; margin-top: 10px;'>
-                                <strong>Title:</strong> {film['title']}<br>
-                                <strong>Genre:</strong> {film['genres']}<br>
-                                <strong>Director:</strong> {film['director']}<br>
-                                <strong>Cast:</strong> {film['cast']}
+                            <div class="film-box">
+                            <div class="film-title">Title: {film['title']}</div>
+                            <div><b>Genre:</b> {film['genres']}</div>
+                            <div><b>Director:</b> {film['director']}</div>
+                            <div><b>Cast:</b> {film['cast']}</div>
                             </div>
                         """, unsafe_allow_html=True)
