@@ -30,12 +30,17 @@ def recommend_film(title, num_recommendations=6):
     result['cosine_similarity'] = similarities
     return result
 
-# ============================
-# STREAMLIT LAYOUT START HERE
-# ============================
-
+# Streamlit UI
 st.set_page_config(layout="wide")
 st.markdown("<h1 style='text-align: center;'>🎬 Sistem Rekomendasi Film</h1>", unsafe_allow_html=True)
+
+# Input besar & tengah
+st.markdown("""
+    <div style='display:flex; justify-content:center;'>
+        <input type='text' name='film_input' placeholder='Masukkan Judul Film...' 
+            style='width:80%; height:50px; font-size:18px; padding:10px; border-radius:10px; border:none;'>
+    </div>
+""", unsafe_allow_html=True)
 
 input_title = st.text_input("Masukkan Judul film yang kamu suka :", "")
 
@@ -50,9 +55,9 @@ if st.button("Cari Rekomendasi"):
 
         for i, (_, row) in enumerate(hasil.iterrows()):
             with cols[i % 3]:
-                st.image(row['poster_url'], use_column_width=True)
+                st.image(row['poster_url'], use_container_width=True)
                 st.markdown(f"""
-                    <div style='background-color:#f5f5f5; padding:20px; border-radius:15px; margin-top:10px;'>
+                    <div style='background-color:#f5f5f5; padding:20px; border-radius:15px; margin-top:15px;'>
                         <p style='color:black'><strong>Title:</strong> {row['title']}</p>
                         <p style='color:black'><strong>Genre:</strong> {row['genres']}</p>
                         <p style='color:black'><strong>Director:</strong> {row['director']}</p>
